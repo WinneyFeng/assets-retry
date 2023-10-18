@@ -9,7 +9,8 @@ import {
     onFailProp,
     domainProp,
     win,
-    styleImageNoImportant
+    styleImageNoImportant,
+    disableAsyncRetryProp
 } from './constants'
 import { Domain, DomainMap, prepareDomainMap } from './url'
 import { identity, noop } from './util'
@@ -29,6 +30,7 @@ export interface AssetsRetryOptions {
     [onFailProp]?: FailFunction
     [domainProp]: Domain
     [styleImageNoImportant]?: boolean
+    [disableAsyncRetryProp]?: boolean;
 }
 
 export interface InnerAssetsRetryOptions {
@@ -38,6 +40,7 @@ export interface InnerAssetsRetryOptions {
     [onFailProp]: FailFunction
     [domainProp]: DomainMap
     [styleImageNoImportant]: boolean
+    [disableAsyncRetryProp]?: boolean;
 }
 
 export default function init(opts: AssetsRetryOptions = {} as any) {
@@ -52,6 +55,7 @@ export default function init(opts: AssetsRetryOptions = {} as any) {
             throw new Error('option name: ' + invalidOptions.join(', ') + ' is not valid.')
         }
         const innerOpts: InnerAssetsRetryOptions = {
+            [disableAsyncRetryProp]: opts[disableAsyncRetryProp] || false,
             [maxRetryCountProp]: opts[maxRetryCountProp] || 3,
             [onRetryProp]: opts[onRetryProp] || identity,
             [onSuccessProp]: opts[onSuccessProp] || noop,
@@ -60,7 +64,9 @@ export default function init(opts: AssetsRetryOptions = {} as any) {
             [styleImageNoImportant]: opts[styleImageNoImportant] || false
         }
         initAsync(innerOpts)
-        initSync(innerOpts)
+        if (!innerOpts[disableAsyncRetryProp]) {
+            initSync(innerOpts)
+        }
         if (__RETRY_IMAGE__) {
             initCss(innerOpts)
         }
