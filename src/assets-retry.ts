@@ -49,7 +49,7 @@ export default function init(opts: AssetsRetryOptions = {} as any) {
         if (typeof opts[domainProp] !== 'object') {
             throw new Error('opts.domain cannot be non-object.')
         }
-        const optionList = [maxRetryCountProp, onRetryProp, onSuccessProp, onFailProp, domainProp, styleImageNoImportant]
+        const optionList = [maxRetryCountProp, onRetryProp, onSuccessProp, onFailProp, domainProp, styleImageNoImportant, disableAsyncRetryProp]
         const invalidOptions = Object.keys(opts).filter(key => optionList.indexOf(key) === -1)
         if (invalidOptions.length > 0) {
             throw new Error('option name: ' + invalidOptions.join(', ') + ' is not valid.')
@@ -63,10 +63,10 @@ export default function init(opts: AssetsRetryOptions = {} as any) {
             [domainProp]: prepareDomainMap(opts[domainProp]),
             [styleImageNoImportant]: opts[styleImageNoImportant] || false
         }
-        initAsync(innerOpts)
         if (!innerOpts[disableAsyncRetryProp]) {
-            initSync(innerOpts)
+            initAsync(innerOpts)
         }
+        initSync(innerOpts)
         if (__RETRY_IMAGE__) {
             initCss(innerOpts)
         }
